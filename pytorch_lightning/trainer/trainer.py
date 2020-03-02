@@ -841,12 +841,14 @@ class Trainer(TrainerIOMixin,
             # Default case for arguments no longer in use
             if not help_string: help_string = "Deprecated Argument"
             return help_string
-
-        trainer_default_args = vars(Trainer())
-
-        for arg in trainer_default_args:
-            parser.add_argument('--{0}'.format(arg), help=get_help_string(arg), 
-                                default=trainer_default_args[arg], dest=arg)
+        # TODO: Substitue other values for parameters with None as default
+        #       to prevent ValueError in Tensorboard
+        signature = inspect.signature(Trainer)
+        for parameter in signature.parameters:
+            default_value = signature.parameters[parameter].default
+            # dtype = type(default_value) Sets a few args to None Type
+            test.add_argument("--{0}".format(parameter), default=default_value,
+                              help=get_help_string(parameter))
 
         return parser
 
