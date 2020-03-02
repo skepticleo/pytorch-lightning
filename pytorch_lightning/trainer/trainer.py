@@ -828,10 +828,25 @@ class Trainer(TrainerIOMixin,
 
         parser = ArgumentParser(parents=[parent_parser])
 
+        # Returns the relevent one line summary of a parameter from
+        # Trainer's constructor doc string
+        def get_help_string(parameter):
+            doc_string = inspect.getdoc(Trainer.__init__)
+            # Matches 'parameter_name<any charecters>:'
+            match_obj = re.search(parameter+'.*:', doc_string)
+            # Extracts the first line summary of the parameter
+            doc_string = doc_string[match_obj.start():]
+            doc_line = doc_string.split('\n')[0]
+            help_string = doc_line.split(':')[-1].strip()
+            # Default case for arguments no longer in use
+            if not help_string: help_string = "Deprecated Argument"
+            return help_string
+
         trainer_default_args = vars(Trainer())
 
         for arg in trainer_default_args:
-            parser.add_argument('--{0}'.format(arg), default=trainer_default_args[arg], dest=arg)
+            parser.add_argument('--{0}'.format(arg), help=get_help_string(arg), 
+                                default=trainer_default_args[arg], dest=arg)
 
         return parser
 
